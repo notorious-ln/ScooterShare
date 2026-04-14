@@ -1,0 +1,27 @@
+# Visual Studio user-specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+build/
+artifacts/
+**/bin/
+**/obj/
+TestResults/
+
+# NuGet restore outputs
+packages/
+
+# Rider / VS Code / Cursor
+.idea/
+.vscode/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.cache
+*.pdb

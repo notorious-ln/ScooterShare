@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="ScooterShare/ScooterShare.csproj" Id="ffc2431d-c384-4f2b-b693-1335672411fd" />
+  <Project Path="WpfMaterialControls/WpfMaterialControls.csproj" />
+</Solution>
