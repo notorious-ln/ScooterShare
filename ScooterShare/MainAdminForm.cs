@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using Guna.UI2.WinForms;
 using System.Windows.Forms.Integration; // for ElementHost
 using WpfMaterialControls.ViewModels; // WPF Material view
+using WpfMaterialControls; // WPF windows
+using System.Windows.Interop;
 
 
 
@@ -805,6 +807,21 @@ ORDER BY month_start;",
         {
             SetActiveSidebar(btnRides);
             ShowRides();
+        }
+
+        private void BtnReports_Click(object sender, EventArgs e)
+        {
+            SetActiveSidebar(btnReports);
+            try
+            {
+                var win = new ReportsWindow();
+                try { new WindowInteropHelper(win).Owner = this.Handle; } catch { }
+                win.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось открыть отчёты.\n{ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnDashboard_Click(object sender, EventArgs e)

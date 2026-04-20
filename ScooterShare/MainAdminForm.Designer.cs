@@ -13,7 +13,7 @@ namespace ScooterShare
         private Panel panelContent;
 
         private Label lblTitle;
-        private Button btnDashboard, btnScooters, btnUsers, btnRides;
+        private Button btnDashboard, btnScooters, btnUsers, btnRides, btnReports;
         private Button btnReturnApp;
 
         // Карточки
@@ -46,6 +46,7 @@ namespace ScooterShare
             this.btnScooters = new Button();
             this.btnUsers = new Button();
             this.btnRides = new Button();
+            this.btnReports = new Button();
             this.btnReturnApp = new Button();
 
             this.lblActivityTitle = new Label();
@@ -74,6 +75,7 @@ namespace ScooterShare
             CreateSidebarButton(btnScooters, "🛴  Самокаты", 122, false, BtnScooters_Click);
             CreateSidebarButton(btnUsers, "👥  Пользователи", 182, false, BtnUsers_Click);
             CreateSidebarButton(btnRides, "📍  Поездки", 242, false, BtnRides_Click);
+            CreateSidebarButton(btnReports, "📄  Отчёты", 302, false, BtnReports_Click);
 
             // Нижняя кнопка "Вернуться в приложение"
             btnReturnApp.Text = "← Вернуться в приложение";
@@ -92,6 +94,7 @@ namespace ScooterShare
             this.panelSidebar.Controls.Add(this.btnScooters);
             this.panelSidebar.Controls.Add(this.btnUsers);
             this.panelSidebar.Controls.Add(this.btnRides);
+            this.panelSidebar.Controls.Add(this.btnReports);
             this.panelSidebar.Controls.Add(this.btnReturnApp);
 
             // Header — убран контрастный цвет, сделан прозрачным/нейтральным

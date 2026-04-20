@@ -322,7 +322,6 @@ ORDER BY s.scooter_id DESC;");
                     @"UPDATE Scooters
                       SET model = @model,
                           condition_id = @conditionId,
-                          yearOfRelease = @yearOfRelease,
                           operational_status = @operationalStatus,
                           battery_percent = @batteryPercent,
                           current_location = @currentLocation
@@ -331,7 +330,6 @@ ORDER BY s.scooter_id DESC;");
                     {
                         new SqlParameter("@model", result.Model),
                         new SqlParameter("@conditionId", result.ConditionId),
-                        new SqlParameter("@yearOfRelease", result.YearOfRelease),
                         new SqlParameter("@operationalStatus", result.OperationalStatus),
                         new SqlParameter("@batteryPercent", result.BatteryPercent),
                         new SqlParameter("@currentLocation", result.CurrentLocation),

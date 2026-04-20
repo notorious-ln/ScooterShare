@@ -84,6 +84,8 @@ namespace WpfMaterialControls
 
         public int ScooterId { get; }
 
+        public bool IsYearOfReleaseEditable => ScooterId <= 0;
+
         public string DialogTitle { get; }
 
         public ObservableCollection<ConditionOption> Conditions { get; }
@@ -179,7 +181,7 @@ namespace WpfMaterialControls
                 return false;
             }
 
-            if (!YearOfRelease.HasValue)
+            if (IsYearOfReleaseEditable && !YearOfRelease.HasValue)
             {
                 ValidationMessage = "Укажи год выпуска.";
                 return false;

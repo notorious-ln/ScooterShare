@@ -88,6 +88,7 @@
                                    Text="Год выпуска"
                                    Foreground="#5D6472" />
                         <DatePicker SelectedDate="{Binding YearOfRelease}"
+                                    IsEnabled="{Binding IsYearOfReleaseEditable}"
                                     Padding="8,4" />
                     </StackPanel>
                 </Grid>

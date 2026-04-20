@@ -5,6 +5,7 @@
     <AssemblyName>WpfMaterialControls</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="MaterialDesignThemes" Version="4.0.0" />
     <PackageReference Include="MaterialDesignColors" Version="2.2.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
