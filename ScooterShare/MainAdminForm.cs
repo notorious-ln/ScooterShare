@@ -31,6 +31,7 @@ namespace ScooterShare
         public MainAdminForm()
         {
             InitializeComponent();
+            this.Icon = AppIcon.WindowIcon;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.WindowState = FormWindowState.Maximized;
             // subscribe to DB activity events so UI can refresh
@@ -1022,9 +1023,13 @@ ORDER BY month_start;",
                     string newModel = tbModel.Text;
                     int newCond = cbCond.SelectedItem is ComboBoxItem ci ? ci.Id : curCond;
                     DateTime newYear = dtp.Value;
-                    DatabaseHelper.ExecuteNonQuery("UPDATE Scooters SET model=@m, condition_id=@c, yearOfRelease=@y WHERE scooter_id=@id",
+                    int rows = DatabaseHelper.ExecuteNonQuery("UPDATE Scooters SET model=@m, condition_id=@c, yearOfRelease=@y WHERE scooter_id=@id",
                         new SqlParameter[] { new SqlParameter("@m", newModel), new SqlParameter("@c", newCond), new SqlParameter("@y", newYear), new SqlParameter("@id", scooterId) });
                     try { DatabaseHelper.LogActivity($"Изменён самокат #{scooterId}: модель->{newModel}"); } catch { }
+                    if (rows > 0)
+                    {
+                        MessageBox.Show("Данные успешно изменены.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
                     ShowScooters();
                 }
             }

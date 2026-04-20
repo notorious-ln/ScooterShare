@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -26,25 +27,42 @@ namespace ScooterShare
         public LoginForm()
         {
             InitializeComponent();
+            this.Icon = AppIcon.WindowIcon;
 
             errorProvider.BlinkStyle = ErrorBlinkStyle.NeverBlink;
             errorProvider.ContainerControl = this;
+            errorProvider.SetIconAlignment(pnlEmail, ErrorIconAlignment.MiddleRight);
+            errorProvider.SetIconAlignment(pnlPassword, ErrorIconAlignment.MiddleRight);
+            // Одинаковое положение значка: всегда справа от поля
+            errorProvider.SetIconPadding(pnlEmail, 6);
+            errorProvider.SetIconPadding(pnlPassword, 6);
 
-            txtEmail.TextChanged += (_, __) => ValidateInputsAndUpdateUi();
-            txtPassword.TextChanged += (_, __) => ValidateInputsAndUpdateUi();
+            txtEmail.TextChanged += (_, __) => ValidateInputsAndUpdateUi(false);
+            txtPassword.TextChanged += (_, __) => ValidateInputsAndUpdateUi(false);
 
             // Регион с закруглениями и позиционирование элементов
             this.Load += (s, e) =>
             {
+                // Прячем прямоугольный фон формы — оставляем только округлённую карточку
+                this.TransparencyKey = Color.Fuchsia;
+                this.BackColor = Color.Fuchsia;
+
                 // скругляем белую карточку
                 SetRoundedRegion(cardPanel, 16);
+
+                // скругляем поля ввода (визуально как в макете)
+                SetRoundedRegion(pnlEmail, 12);
+                SetRoundedRegion(pnlPassword, 12);
+                pnlEmail.Paint += DrawInputOutline;
+                pnlPassword.Paint += DrawInputOutline;
 
                 // скруглить кнопки
                 SetRoundedRegion(btnLogin, 10);
                 SetRoundedRegion(btnGuest, 10);
 
-                // позиционируем элементы
-                CenterCardHorizontally();
+                // Убираем управление окном — в макете его нет
+                btnMinimize.Visible = false;
+                btnClose.Visible = false;
 
                 // переместить и центрировать ссылки внутри карточки
                 int centerX = (cardPanel.Width) / 2;
@@ -56,21 +74,17 @@ namespace ScooterShare
                 lblAdminLink.Left = centerX - lblAdminLink.PreferredWidth / 2;
                 lblAdminLink.Top = lblRegister.Bottom + 6;
 
-                // разместить текст условий ниже карточки и центрировать по форме
-                lblTerms.Left = (this.ClientSize.Width / 2) - (lblTerms.PreferredWidth / 2);
-                lblTerms.Top = cardPanel.Bottom + 12;
+                // В макете нет текста условий
+                lblTerms.Visible = false;
 
-                // скорректируем позицию контрольных кнопок (если ширина карточки изменится)
-                btnMinimize.Left = cardPanel.Width - 24 - 56;
-                btnClose.Left = cardPanel.Width - 24 - 24;
+                LayoutHeader();
             };
 
-            ValidateInputsAndUpdateUi();
+            ValidateInputsAndUpdateUi(false);
         }
 
-        private void CenterCardHorizontally()
+        private void LayoutHeader()
         {
-            cardPanel.Left = (this.ClientSize.Width - cardPanel.Width) / 2;
             pbLogo.Left = (cardPanel.Width - pbLogo.Width) / 2;
             lblTitle.Left = (cardPanel.Width - lblTitle.PreferredWidth) / 2;
             lblSubtitle.Left = (cardPanel.Width - lblSubtitle.PreferredWidth) / 2;
@@ -78,7 +92,32 @@ namespace ScooterShare
 
             // позиция внутри cardPanel
             lblForgotPassword.Left = cardPanel.Width - 24 - lblForgotPassword.PreferredWidth;
-            lblForgotPassword.Top = 292;
+        }
+
+        private void DrawInputOutline(object sender, PaintEventArgs e)
+        {
+            var p = sender as Panel;
+            if (p == null)
+            {
+                return;
+            }
+
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            var rect = new Rectangle(0, 0, p.Width - 1, p.Height - 1);
+            using (var pen = new Pen(Color.FromArgb(230, 230, 230), 1f))
+            {
+                using (var path = new GraphicsPath())
+                {
+                    int radius = 12;
+                    int d = radius * 2;
+                    path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+                    path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+                    path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+                    path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+                    path.CloseFigure();
+                    e.Graphics.DrawPath(pen, path);
+                }
+            }
         }
 
         private void SetRoundedRegion(Control ctrl, int radius)
@@ -101,12 +140,37 @@ namespace ScooterShare
             var rect = new Rectangle(0, 0, pbLogo.Width - 1, pbLogo.Height - 1);
             using (var brush = new SolidBrush(Color.FromArgb(12, 10, 23)))
                 g.FillEllipse(brush, rect);
-            using (var pen = new Pen(Color.FromArgb(88, 180, 255), 3))
+
+            var src = AppIcon.LogoBitmap;
+            int innerSize = (int)(pbLogo.Width * 0.70f);
+            int ix = (pbLogo.Width - innerSize) / 2;
+            int iy = (pbLogo.Height - innerSize) / 2;
+            var innerRect = new Rectangle(ix, iy, innerSize, innerSize);
+
+            using (var white = new SolidBrush(Color.White))
             {
-                g.DrawLine(pen, pbLogo.Width * 0.25f, pbLogo.Height * 0.6f, pbLogo.Width * 0.6f, pbLogo.Height * 0.45f);
-                g.DrawLine(pen, pbLogo.Width * 0.6f, pbLogo.Height * 0.45f, pbLogo.Width * 0.72f, pbLogo.Height * 0.32f);
-                g.DrawEllipse(pen, pbLogo.Width * 0.18f, pbLogo.Height * 0.62f, pbLogo.Width * 0.18f, pbLogo.Width * 0.18f);
-                g.DrawEllipse(pen, pbLogo.Width * 0.62f, pbLogo.Height * 0.6f, pbLogo.Width * 0.18f, pbLogo.Width * 0.18f);
+                g.FillEllipse(white, innerRect);
+            }
+
+            int imgSize = (int)(innerSize * 0.78f);
+            int x = (pbLogo.Width - imgSize) / 2;
+            int y = (pbLogo.Height - imgSize) / 2;
+            var dest = new Rectangle(x, y, imgSize, imgSize);
+
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            using (var ia = new ImageAttributes())
+            {
+                ia.SetColorKey(Color.White, Color.White);
+                g.DrawImage(
+                    src,
+                    dest,
+                    0,
+                    0,
+                    src.Width,
+                    src.Height,
+                    GraphicsUnit.Pixel,
+                    ia);
             }
         }
 
@@ -192,7 +256,7 @@ namespace ScooterShare
 
         private void BtnLogin_Click(object sender, EventArgs e)
         {
-            if (!ValidateInputsAndUpdateUi())
+            if (!ValidateInputsAndUpdateUi(true))
             {
                 return;
             }
@@ -235,7 +299,7 @@ namespace ScooterShare
         private void LblAdminLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             // Проверяем поля ввода (учитываем плейсхолдеры)
-            if (!ValidateInputsAndUpdateUi())
+            if (!ValidateInputsAndUpdateUi(true))
             {
                 return;
             }
@@ -281,30 +345,79 @@ namespace ScooterShare
             }
         }
 
-        private bool ValidateInputsAndUpdateUi()
+        private void BtnLogin_Paint(object sender, PaintEventArgs e)
+        {
+            var b = sender as Button;
+            if (b == null)
+            {
+                return;
+            }
+
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            var rect = new Rectangle(0, 0, b.Width - 1, b.Height - 1);
+            using (var path = new GraphicsPath())
+            {
+                int radius = 10;
+                int d = radius * 2;
+                path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+                path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+                path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+                path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+                path.CloseFigure();
+
+                e.Graphics.SetClip(path);
+                using (var brush = new LinearGradientBrush(
+                           rect,
+                           Color.FromArgb(16, 14, 30),
+                           Color.FromArgb(6, 6, 14),
+                           LinearGradientMode.Horizontal))
+                {
+                    e.Graphics.FillRectangle(brush, rect);
+                }
+
+                if (!b.Enabled)
+                {
+                    using (var overlay = new SolidBrush(Color.FromArgb(120, Color.White)))
+                    {
+                        e.Graphics.FillRectangle(overlay, rect);
+                    }
+                }
+            }
+
+            TextRenderer.DrawText(
+                e.Graphics,
+                b.Text,
+                b.Font,
+                rect,
+                b.ForeColor,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        }
+
+        private bool ValidateInputsAndUpdateUi(bool strict)
         {
             string email = (txtEmail.ForeColor == placeholderColor) ? string.Empty : (txtEmail.Text ?? string.Empty);
             string password = (txtPassword.ForeColor == placeholderColor) ? string.Empty : (txtPassword.Text ?? string.Empty);
 
             bool ok = true;
-            errorProvider.SetError(txtEmail, string.Empty);
-            errorProvider.SetError(txtPassword, string.Empty);
+            errorProvider.SetError(pnlEmail, string.Empty);
+            errorProvider.SetError(pnlPassword, string.Empty);
 
             if (string.IsNullOrWhiteSpace(email))
             {
                 ok = false;
-                errorProvider.SetError(txtEmail, "Укажи email.");
+                errorProvider.SetError(pnlEmail, "Укажи email.");
             }
-            else if (!IsValidEmail(email))
+            else if (strict && !IsValidEmail(email))
             {
                 ok = false;
-                errorProvider.SetError(txtEmail, "Неверный формат email.");
+                errorProvider.SetError(pnlEmail, "Неверный формат email.");
             }
 
             if (string.IsNullOrWhiteSpace(password) || string.Equals(password, "Пароль", StringComparison.Ordinal))
             {
                 ok = false;
-                errorProvider.SetError(txtPassword, "Укажи пароль.");
+                errorProvider.SetError(pnlPassword, "Укажи пароль.");
             }
 
             btnLogin.Enabled = ok;

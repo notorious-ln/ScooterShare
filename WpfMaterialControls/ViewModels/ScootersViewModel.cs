@@ -318,7 +318,7 @@ ORDER BY s.scooter_id DESC;");
                 }
 
                 ScooterDialogResult result = dialog.Result;
-                DatabaseHelper.ExecuteNonQuery(
+                int rows = DatabaseHelper.ExecuteNonQuery(
                     @"UPDATE Scooters
                       SET model = @model,
                           condition_id = @conditionId,
@@ -337,6 +337,10 @@ ORDER BY s.scooter_id DESC;");
                     });
 
                 DatabaseHelper.LogActivity($"Изменён самокат #{id}: {result.Model}");
+                if (rows > 0)
+                {
+                    MessageBox.Show("Данные успешно изменены.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
                 Load();
             }
             catch (Exception ex)

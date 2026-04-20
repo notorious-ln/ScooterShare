@@ -350,7 +350,7 @@ ORDER BY c.client_id DESC");
                         SET firstName=@fn, lastName=@ln, client_post=@em, telephone_number=@ph
                         WHERE client_id=@id";
 
-                DatabaseHelper.ExecuteNonQuery(
+                int rows = DatabaseHelper.ExecuteNonQuery(
                     updateQuery,
                     !string.IsNullOrEmpty(middleNameColumn)
                     ? new[]
@@ -372,6 +372,10 @@ ORDER BY c.client_id DESC");
                     });
 
                 try { DatabaseHelper.LogActivity($"Изменён пользователь #{id}: {lastName} {firstName}"); } catch { }
+                if (rows > 0)
+                {
+                    MessageBox.Show("Данные успешно изменены.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
                 Load();
             }
             catch (Exception ex)

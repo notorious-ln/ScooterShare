@@ -13,10 +13,12 @@ namespace ScooterShare
         private Label lblTitle;
         private Label lblSubtitle;
 
+        private Label lblEmailCaption;
         private Panel pnlEmail;
         private PictureBox pbEmailIcon;
         private TextBox txtEmail;
 
+        private Label lblPasswordCaption;
         private Panel pnlPassword;
         private PictureBox pbPasswordIcon;
         private TextBox txtPassword;
@@ -58,10 +60,12 @@ namespace ScooterShare
             this.lblTitle = new System.Windows.Forms.Label();
             this.lblSubtitle = new System.Windows.Forms.Label();
 
+            this.lblEmailCaption = new System.Windows.Forms.Label();
             this.pnlEmail = new System.Windows.Forms.Panel();
             this.pbEmailIcon = new System.Windows.Forms.PictureBox();
             this.txtEmail = new System.Windows.Forms.TextBox();
 
+            this.lblPasswordCaption = new System.Windows.Forms.Label();
             this.pnlPassword = new System.Windows.Forms.Panel();
             this.pbPasswordIcon = new System.Windows.Forms.PictureBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
@@ -85,21 +89,19 @@ namespace ScooterShare
 
             // Form
             this.SuspendLayout();
-            this.ClientSize = new System.Drawing.Size(520, 820);
+            // Делаем окно равным карточке, без внешнего фона
+            this.ClientSize = new System.Drawing.Size(420, 600);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.BackColor = System.Drawing.Color.FromArgb(240, 241, 243);
+            // Прозрачные углы зададим через TransparencyKey в коде формы
+            this.BackColor = System.Drawing.Color.Fuchsia;
             this.Text = "ScooterShare - Вход";
-
-            // pnlBackground
-            this.pnlBackground.Dock = DockStyle.Fill;
-            this.pnlBackground.BackColor = this.BackColor;
 
             // cardPanel (сделан чуть меньше снизу, скругление в коде)
             this.cardPanel.Size = new System.Drawing.Size(420, 600);
             this.cardPanel.BackColor = System.Drawing.Color.White;
-            this.cardPanel.Location = new System.Drawing.Point((this.ClientSize.Width - this.cardPanel.Width) / 2, 30);
-            this.cardPanel.Anchor = AnchorStyles.Top;
+            this.cardPanel.Location = new System.Drawing.Point(0, 0);
+            this.cardPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             this.cardPanel.Padding = new Padding(24);
             // allow dragging by mouse on cardPanel
             this.cardPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.CardPanel_MouseDown);
@@ -113,6 +115,7 @@ namespace ScooterShare
             this.btnMinimize.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.btnMinimize.BackColor = System.Drawing.Color.Transparent;
             this.btnMinimize.Click += new System.EventHandler(this.BtnMinimize_Click);
+            this.btnMinimize.Visible = false;
 
             // btnClose (в правом верхнем углу карточки)
             this.btnClose.Size = new System.Drawing.Size(28, 24);
@@ -123,6 +126,7 @@ namespace ScooterShare
             this.btnClose.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.btnClose.BackColor = System.Drawing.Color.Transparent;
             this.btnClose.Click += new System.EventHandler(this.BtnClose_Click);
+            this.btnClose.Visible = false;
 
             // pbLogo
             this.pbLogo.Size = new System.Drawing.Size(78, 78);
@@ -149,10 +153,17 @@ namespace ScooterShare
             this.lblSubtitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblSubtitle.Location = new System.Drawing.Point((this.cardPanel.Width - 200) / 2, 126);
 
+            // lblEmailCaption
+            this.lblEmailCaption.AutoSize = true;
+            this.lblEmailCaption.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblEmailCaption.ForeColor = System.Drawing.Color.FromArgb(34, 34, 34);
+            this.lblEmailCaption.Text = "Электронная почта";
+            this.lblEmailCaption.Location = new System.Drawing.Point(24, 150);
+
             // pnlEmail
             this.pnlEmail.Size = new System.Drawing.Size(this.cardPanel.Width - 48, 44);
-            this.pnlEmail.Location = new System.Drawing.Point(24, 170);
-            this.pnlEmail.BackColor = System.Drawing.Color.FromArgb(248, 249, 250);
+            this.pnlEmail.Location = new System.Drawing.Point(24, 172);
+            this.pnlEmail.BackColor = System.Drawing.Color.White;
             this.pnlEmail.BorderStyle = BorderStyle.None;
 
             // pbEmailIcon
@@ -166,16 +177,23 @@ namespace ScooterShare
             this.txtEmail.Location = new System.Drawing.Point(44, 12);
             this.txtEmail.Size = new System.Drawing.Size(this.pnlEmail.Width - 56, 18);
             this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 10F);
-            // По умолчанию заполняем поля для админ‑входа
+            // По умолчанию — админские данные (логика в LoginForm.cs остаётся прежней)
             this.txtEmail.ForeColor = System.Drawing.Color.FromArgb(34, 34, 34);
             this.txtEmail.Text = "admin@gmail.com";
             this.txtEmail.Enter += new System.EventHandler(this.TxtEmail_Enter);
             this.txtEmail.Leave += new System.EventHandler(this.TxtEmail_Leave);
 
+            // lblPasswordCaption
+            this.lblPasswordCaption.AutoSize = true;
+            this.lblPasswordCaption.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.lblPasswordCaption.ForeColor = System.Drawing.Color.FromArgb(34, 34, 34);
+            this.lblPasswordCaption.Text = "Пароль";
+            this.lblPasswordCaption.Location = new System.Drawing.Point(24, 212);
+
             // pnlPassword
             this.pnlPassword.Size = new System.Drawing.Size(this.cardPanel.Width - 48, 44);
-            this.pnlPassword.Location = new System.Drawing.Point(24, 230);
-            this.pnlPassword.BackColor = System.Drawing.Color.FromArgb(248, 249, 250);
+            this.pnlPassword.Location = new System.Drawing.Point(24, 234);
+            this.pnlPassword.BackColor = System.Drawing.Color.White;
             this.pnlPassword.BorderStyle = BorderStyle.None;
 
             // pbPasswordIcon
@@ -207,7 +225,7 @@ namespace ScooterShare
 
             // chkRemember
             this.chkRemember.AutoSize = true;
-            this.chkRemember.Location = new System.Drawing.Point(24, 290);
+            this.chkRemember.Location = new System.Drawing.Point(24, 300);
             this.chkRemember.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.chkRemember.Text = "Запомнить меня";
             this.chkRemember.ForeColor = System.Drawing.Color.FromArgb(85, 85, 85);
@@ -217,7 +235,7 @@ namespace ScooterShare
             this.lblForgotPassword.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             this.lblForgotPassword.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblForgotPassword.Text = "Забыли пароль?";
-            this.lblForgotPassword.Location = new System.Drawing.Point(this.cardPanel.Width - 24 - 120, 292);
+            this.lblForgotPassword.Location = new System.Drawing.Point(this.cardPanel.Width - 24 - 120, 302);
             this.lblForgotPassword.LinkClicked += (s, e) =>
                 System.Windows.Forms.MessageBox.Show("Свяжитесь с администратором", "Восстановление",
                     System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Information);
@@ -232,6 +250,7 @@ namespace ScooterShare
             this.btnLogin.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold);
             this.btnLogin.Text = "Войти";
             this.btnLogin.Click += new System.EventHandler(this.BtnLogin_Click);
+            this.btnLogin.Paint += new System.Windows.Forms.PaintEventHandler(this.BtnLogin_Paint);
 
             // separator / OR
             this.sepLineLeft.Size = new System.Drawing.Size((this.cardPanel.Width - 48) / 2 - 30, 1);
@@ -243,7 +262,7 @@ namespace ScooterShare
             this.sepLineRight.Location = new System.Drawing.Point(24 + (this.cardPanel.Width - 48) / 2 + 30, 390);
 
             this.lblOr.AutoSize = true;
-            this.lblOr.Text = "ИЛИ";
+            this.lblOr.Text = "или";
             this.lblOr.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.lblOr.ForeColor = System.Drawing.Color.Gray;
             this.lblOr.Location = new System.Drawing.Point((this.cardPanel.Width - this.lblOr.PreferredWidth) / 2, 382);
@@ -292,7 +311,9 @@ namespace ScooterShare
             this.cardPanel.Controls.Add(this.pbLogo);
             this.cardPanel.Controls.Add(this.lblTitle);
             this.cardPanel.Controls.Add(this.lblSubtitle);
+            this.cardPanel.Controls.Add(this.lblEmailCaption);
             this.cardPanel.Controls.Add(this.pnlEmail);
+            this.cardPanel.Controls.Add(this.lblPasswordCaption);
             this.cardPanel.Controls.Add(this.pnlPassword);
             this.cardPanel.Controls.Add(this.chkRemember);
             this.cardPanel.Controls.Add(this.lblForgotPassword);
@@ -306,12 +327,11 @@ namespace ScooterShare
             this.cardPanel.Controls.Add(this.lblRegister);
             this.cardPanel.Controls.Add(this.lblAdminLink);
 
-            // add to form
-            this.pnlBackground.Controls.Add(this.cardPanel);
-            this.Controls.Add(this.pnlBackground);
+            // add to form (без внешнего фона)
+            this.Controls.Add(this.cardPanel);
 
-            // terms are outside cardPanel (под карточкой)
-            this.Controls.Add(this.lblTerms);
+            // Условия скрываем (в макете их нет)
+            this.lblTerms.Visible = false;
 
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -301,9 +301,13 @@ namespace ScooterShare
                 if (yearStr == null) return;
                 DateTime yearValue = DateTime.Parse(yearStr, CultureInfo.InvariantCulture);
 
-                DatabaseHelper.ExecuteNonQuery("UPDATE Scooters SET model=@m, condition_id=@c, yearOfRelease=@y WHERE scooter_id=@id",
+                int rows = DatabaseHelper.ExecuteNonQuery("UPDATE Scooters SET model=@m, condition_id=@c, yearOfRelease=@y WHERE scooter_id=@id",
                     new SqlParameter[] { new SqlParameter("@m", newModel), new SqlParameter("@c", condId), new SqlParameter("@y", yearValue), new SqlParameter("@id", id) });
                 try { DatabaseHelper.LogActivity($"Изменён самокат #{id}: модель -> {newModel}"); } catch { }
+                if (rows > 0)
+                {
+                    MessageBox.Show("Данные успешно изменены.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
                 LoadScooters();
                 LoadStats();
             }
