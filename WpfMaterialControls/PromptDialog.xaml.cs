@@ -58,7 +58,16 @@ namespace WpfMaterialControls
         private bool ValidateAndUpdateUi()
         {
             string input = viewModel.InputText ?? string.Empty;
-            string error = validate == null ? null : validate(input);
+            string error = null;
+
+            if (lettersOnly && Regex.IsMatch(input, @"\d"))
+            {
+                error = "Здесь нужно писать буквы (цифры нельзя).";
+            }
+            else
+            {
+                error = validate == null ? null : validate(input);
+            }
 
             viewModel.ErrorText = string.IsNullOrWhiteSpace(error) ? string.Empty : error;
             viewModel.CanAccept = string.IsNullOrWhiteSpace(viewModel.ErrorText);
@@ -115,8 +124,8 @@ namespace WpfMaterialControls
             if (Regex.IsMatch(e.Text ?? string.Empty, @"\d"))
             {
                 e.Handled = true;
-                viewModel.ErrorText = "Здесь нужно писать буквы (цифры нельзя).";
-                viewModel.CanAccept = false;
+                // Keep the UI feedback consistent with ValidateAndUpdateUi().
+                ValidateAndUpdateUi();
             }
         }
 
@@ -136,6 +145,7 @@ namespace WpfMaterialControls
             if (Regex.IsMatch(pasted, @"\d"))
             {
                 e.CancelCommand();
+                viewModel.InputText = viewModel.InputText ?? string.Empty;
                 viewModel.ErrorText = "Нельзя вставлять цифры — здесь только буквы.";
                 viewModel.CanAccept = false;
             }

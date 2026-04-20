@@ -52,9 +52,13 @@
                         Padding="10"
                         CornerRadius="10"
                         Background="#FDECEE"
+                        BorderBrush="#E9B9C3"
+                        BorderThickness="1"
                         Visibility="{Binding ErrorVisibility}">
                     <TextBlock Text="{Binding ErrorText}"
-                               Foreground="#D15B75"
+                               Foreground="#1F1F1F"
+                               FontSize="13"
+                               FontWeight="SemiBold"
                                TextWrapping="Wrap" />
                 </Border>
 

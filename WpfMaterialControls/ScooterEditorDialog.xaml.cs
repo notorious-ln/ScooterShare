@@ -56,7 +56,8 @@ namespace WpfMaterialControls
         private string batteryPercentText;
         private string currentLocation;
         private DateTime? yearOfRelease;
-        private string validationMessage;
+        private string modelDigitsOnlyHintText;
+        private string locationDigitsOnlyHintText;
         private readonly Dictionary<string, List<string>> errorsByPropertyName =
             new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
@@ -109,6 +110,36 @@ namespace WpfMaterialControls
                 }
             }
         }
+
+        public string ModelDigitsOnlyHintText
+        {
+            get => modelDigitsOnlyHintText;
+            private set
+            {
+                if (SetProperty(ref modelDigitsOnlyHintText, value))
+                {
+                    OnPropertyChanged(nameof(ModelDigitsOnlyHintVisibility));
+                }
+            }
+        }
+
+        public Visibility ModelDigitsOnlyHintVisibility =>
+            string.IsNullOrWhiteSpace(ModelDigitsOnlyHintText) ? Visibility.Collapsed : Visibility.Visible;
+
+        public string LocationDigitsOnlyHintText
+        {
+            get => locationDigitsOnlyHintText;
+            private set
+            {
+                if (SetProperty(ref locationDigitsOnlyHintText, value))
+                {
+                    OnPropertyChanged(nameof(LocationDigitsOnlyHintVisibility));
+                }
+            }
+        }
+
+        public Visibility LocationDigitsOnlyHintVisibility =>
+            string.IsNullOrWhiteSpace(LocationDigitsOnlyHintText) ? Visibility.Collapsed : Visibility.Visible;
 
         public int SelectedConditionId
         {
@@ -170,21 +201,6 @@ namespace WpfMaterialControls
             }
         }
 
-        public string ValidationMessage
-        {
-            get => validationMessage;
-            set
-            {
-                if (SetProperty(ref validationMessage, value))
-                {
-                    OnPropertyChanged(nameof(ValidationMessageVisibility));
-                }
-            }
-        }
-
-        public Visibility ValidationMessageVisibility =>
-            string.IsNullOrWhiteSpace(ValidationMessage) ? Visibility.Collapsed : Visibility.Visible;
-
         public bool CanSave => !HasErrors;
 
         public bool HasErrors => errorsByPropertyName.Count > 0;
@@ -239,29 +255,28 @@ namespace WpfMaterialControls
             ValidateBatteryPercentText();
             ValidateCurrentLocation();
             ValidateYearOfRelease();
-            UpdateValidationMessageFromErrors();
             OnPropertyChanged(nameof(CanSave));
         }
 
         private void ValidateModel()
         {
             ClearErrors(nameof(Model));
+            ModelDigitsOnlyHintText = string.Empty;
             string v = (Model ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(v))
             {
                 AddError(nameof(Model), "Укажи модель самоката. Можно буквы и цифры (например: Xiaomi M365).");
-                UpdateValidationMessageFromErrors();
                 return;
             }
 
             // Allow letters + digits, but disallow "digits only"
             if (!Regex.IsMatch(v, @"\p{L}"))
             {
-                AddError(nameof(Model), "Модель не может состоять только из цифр. Добавь хотя бы одну букву (например: M365).");
-                UpdateValidationMessageFromErrors();
+                const string msg = "Нельзя указывать модель только цифрами — добавь хотя бы одну букву (например: M365).";
+                AddError(nameof(Model), msg);
+                ModelDigitsOnlyHintText = msg;
                 return;
             }
-            UpdateValidationMessageFromErrors();
         }
 
         private void ValidateSelectedConditionId()
@@ -271,7 +286,6 @@ namespace WpfMaterialControls
             {
                 AddError(nameof(SelectedConditionId), "Выбери техническое состояние самоката.");
             }
-            UpdateValidationMessageFromErrors();
         }
 
         private void ValidateSelectedStatus()
@@ -281,7 +295,6 @@ namespace WpfMaterialControls
             {
                 AddError(nameof(SelectedStatus), "Выбери оперативный статус.");
             }
-            UpdateValidationMessageFromErrors();
         }
 
         private void ValidateBatteryPercentText()
@@ -290,14 +303,12 @@ namespace WpfMaterialControls
             if (string.IsNullOrWhiteSpace(BatteryPercentText))
             {
                 AddError(nameof(BatteryPercentText), "Укажи заряд (0–100).");
-                UpdateValidationMessageFromErrors();
                 return;
             }
 
             if (!int.TryParse(BatteryPercentText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int batteryPercent))
             {
                 AddError(nameof(BatteryPercentText), "Заряд должен быть целым числом от 0 до 100.");
-                UpdateValidationMessageFromErrors();
                 return;
             }
 
@@ -305,18 +316,26 @@ namespace WpfMaterialControls
             {
                 AddError(nameof(BatteryPercentText), "Заряд должен быть в диапазоне от 0 до 100.");
             }
-
-            UpdateValidationMessageFromErrors();
         }
 
         private void ValidateCurrentLocation()
         {
             ClearErrors(nameof(CurrentLocation));
-            if (string.IsNullOrWhiteSpace(CurrentLocation))
+            LocationDigitsOnlyHintText = string.Empty;
+            string v = (CurrentLocation ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v))
             {
                 AddError(nameof(CurrentLocation), "Укажи текущее местоположение самоката.");
+                return;
             }
-            UpdateValidationMessageFromErrors();
+
+            // Disallow values that are "digits only" (same UX as Model).
+            if (!Regex.IsMatch(v, @"\p{L}"))
+            {
+                const string msg = "Местоположение не может состоять только из цифр — добавь хотя бы одну букву (например: Центр, Park 12).";
+                AddError(nameof(CurrentLocation), msg);
+                LocationDigitsOnlyHintText = msg;
+            }
         }
 
         private void ValidateYearOfRelease()
@@ -325,7 +344,6 @@ namespace WpfMaterialControls
             if (IsYearOfReleaseEditable && !YearOfRelease.HasValue)
             {
                 AddError(nameof(YearOfRelease), "Укажи год выпуска.");
-                UpdateValidationMessageFromErrors();
                 return;
             }
 
@@ -333,15 +351,6 @@ namespace WpfMaterialControls
             {
                 AddError(nameof(YearOfRelease), "Год выпуска не может быть в будущем.");
             }
-
-            UpdateValidationMessageFromErrors();
-        }
-
-        private void UpdateValidationMessageFromErrors()
-        {
-            string firstError = errorsByPropertyName.Values.SelectMany(x => x).FirstOrDefault() ?? string.Empty;
-            ValidationMessage = firstError;
-            OnPropertyChanged(nameof(CanSave));
         }
 
         private void AddError(string propertyName, string error)

@@ -72,10 +72,18 @@
                            Margin="0,24,0,8"
                            Text="Модель"
                            Foreground="#5D6472" />
-                <TextBox x:Name="txtModel"
-                         Grid.Row="2"
-                         Padding="10,8"
-                         Text="{Binding Model, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                <StackPanel Grid.Row="2">
+                    <TextBox x:Name="txtModel"
+                             Padding="10,8"
+                             Text="{Binding Model, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                    <TextBlock Margin="2,6,0,0"
+                               Text="{Binding ModelDigitsOnlyHintText}"
+                               Foreground="#7A1E2B"
+                               FontSize="12.5"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding ModelDigitsOnlyHintVisibility}" />
+                </StackPanel>
 
                 <Grid Grid.Row="3" Margin="0,18,0,0">
                     <Grid.ColumnDefinitions>
@@ -135,20 +143,17 @@
                            Margin="0,18,0,8"
                            Text="Местоположение"
                            Foreground="#5D6472" />
-                <TextBox Grid.Row="6"
-                         Padding="10,8"
-                         Text="{Binding CurrentLocation, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
-
-                <Border Grid.Row="7"
-                        Margin="0,18,0,0"
-                        Padding="12"
-                        CornerRadius="10"
-                        Background="#FFF8E7"
-                        Visibility="{Binding ValidationMessageVisibility}">
-                    <TextBlock Text="{Binding ValidationMessage}"
-                               Foreground="#A06F00"
-                               TextWrapping="Wrap" />
-                </Border>
+                <StackPanel Grid.Row="6">
+                    <TextBox Padding="10,8"
+                             Text="{Binding CurrentLocation, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                    <TextBlock Margin="2,6,0,0"
+                               Text="{Binding LocationDigitsOnlyHintText}"
+                               Foreground="#7A1E2B"
+                               FontSize="12.5"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               Visibility="{Binding LocationDigitsOnlyHintVisibility}" />
+                </StackPanel>
 
                 <StackPanel Grid.Row="8"
                             Margin="0,22,0,0"
