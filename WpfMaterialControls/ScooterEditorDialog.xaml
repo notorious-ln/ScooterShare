@@ -11,6 +11,51 @@
         ResizeMode="NoResize"
         Background="#F6F7FA">
     <Window.Resources>
+        <SolidColorBrush x:Key="UiTextPrimary" Color="#222222" />
+        <SolidColorBrush x:Key="UiTextSecondary" Color="#5D6472" />
+        <SolidColorBrush x:Key="UiSurface" Color="White" />
+        <SolidColorBrush x:Key="UiInputBg" Color="#F8F9FB" />
+        <SolidColorBrush x:Key="UiBorder" Color="#D7DAE5" />
+        <SolidColorBrush x:Key="UiError" Color="#D15B75" />
+        <SolidColorBrush x:Key="UiHint" Color="#7A1E2B" />
+
+        <Style x:Key="RoundedButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Padding" Value="14,9" />
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="#E9EBF0" />
+            <Setter Property="Foreground" Value="{StaticResource UiTextPrimary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#DEE2EA" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#D3D8E3" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.55" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style TargetType="{x:Type Control}">
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
@@ -21,71 +66,115 @@
         </Style>
 
         <Style TargetType="{x:Type TextBox}">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,9" />
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="BorderBrush" Value="#D15B75" />
-                    <Setter Property="BorderThickness" Value="2" />
+                    <!-- border is shown on the surrounding Border chrome -->
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,7" />
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="BorderBrush" Value="#D15B75" />
-                    <Setter Property="BorderThickness" Value="2" />
+                    <!-- border is shown on the surrounding Border chrome -->
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style TargetType="{x:Type DatePicker}">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="10,6" />
             <Style.Triggers>
                 <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="BorderBrush" Value="#D15B75" />
-                    <Setter Property="BorderThickness" Value="2" />
+                    <!-- border is shown on the surrounding Border chrome -->
                 </Trigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
     <Grid Margin="20">
-        <md:Card Padding="24">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0"
-                           Text="{Binding DialogTitle}"
-                           FontSize="24"
-                           FontWeight="SemiBold"
-                           Foreground="#222222" />
-
-                <TextBlock Grid.Row="1"
-                           Margin="0,24,0,8"
-                           Text="Модель"
-                           Foreground="#5D6472" />
-                <StackPanel Grid.Row="2">
-                    <TextBox x:Name="txtModel"
-                             Padding="10,8"
-                             Text="{Binding Model, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
-                    <TextBlock Margin="2,6,0,0"
-                               Text="{Binding ModelDigitsOnlyHintText}"
-                               Foreground="#7A1E2B"
-                               FontSize="12.5"
-                               FontWeight="SemiBold"
-                               TextWrapping="Wrap"
-                               Visibility="{Binding ModelDigitsOnlyHintVisibility}" />
+        <md:Card Padding="26"
+                 UniformCornerRadius="18">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Bottom"
+                            Margin="0,18,0,0"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Width="100"
+                            Margin="0,0,10,0"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Click="CancelButton_Click"
+                            Content="Отмена" />
+                    <Button Width="140"
+                            Style="{StaticResource RoundedButtonStyle}"
+                            Background="#0F1020"
+                            Foreground="White"
+                            BorderThickness="0"
+                            IsEnabled="{Binding CanSave}"
+                            Click="SaveButton_Click"
+                            Content="Сохранить" />
                 </StackPanel>
 
-                <Grid Grid.Row="3" Margin="0,18,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Hidden"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding DialogTitle}"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource UiTextPrimary}" />
+
+                        <TextBlock Grid.Row="1"
+                                   Margin="0,24,0,8"
+                                   Text="Модель"
+                                   Foreground="{StaticResource UiTextSecondary}" />
+                        <StackPanel Grid.Row="2">
+                            <Border Background="{StaticResource UiInputBg}"
+                                    BorderBrush="{StaticResource UiBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="12">
+                                <Border.Style>
+                                    <Style TargetType="{x:Type Border}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ElementName=txtModel, Path=(Validation.HasError)}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource UiError}" />
+                                                <Setter Property="BorderThickness" Value="2" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBox x:Name="txtModel"
+                                         Text="{Binding Model, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                            </Border>
+                            <TextBlock Margin="2,6,0,0"
+                                       Text="{Binding ModelDigitsOnlyHintText}"
+                                       Foreground="{StaticResource UiHint}"
+                                       FontSize="12.5"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding ModelDigitsOnlyHintVisibility}" />
+                        </StackPanel>
+
+                        <Grid Grid.Row="3" Margin="0,18,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="16" />
@@ -95,25 +184,55 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Margin="0,0,0,8"
                                    Text="Техническое состояние"
-                                   Foreground="#5D6472" />
-                        <ComboBox ItemsSource="{Binding Conditions}"
-                                  DisplayMemberPath="ConditionName"
-                                  SelectedValuePath="ConditionId"
-                                  SelectedValue="{Binding SelectedConditionId, ValidatesOnNotifyDataErrors=True}"
-                                  Padding="8,6" />
+                                   Foreground="{StaticResource UiTextSecondary}" />
+                        <Border Background="{StaticResource UiInputBg}"
+                                BorderBrush="{StaticResource UiBorder}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=cbCondition, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource UiError}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ComboBox x:Name="cbCondition"
+                                      ItemsSource="{Binding Conditions}"
+                                      DisplayMemberPath="ConditionName"
+                                      SelectedValuePath="ConditionId"
+                                      SelectedValue="{Binding SelectedConditionId, ValidatesOnNotifyDataErrors=True}" />
+                        </Border>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
                         <TextBlock Margin="0,0,0,8"
                                    Text="Оперативный статус"
-                                   Foreground="#5D6472" />
-                        <ComboBox ItemsSource="{Binding AvailableStatuses}"
-                                  SelectedItem="{Binding SelectedStatus, ValidatesOnNotifyDataErrors=True}"
-                                  Padding="8,6" />
+                                   Foreground="{StaticResource UiTextSecondary}" />
+                        <Border Background="{StaticResource UiInputBg}"
+                                BorderBrush="{StaticResource UiBorder}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=cbStatus, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource UiError}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ComboBox x:Name="cbStatus"
+                                      ItemsSource="{Binding AvailableStatuses}"
+                                      SelectedItem="{Binding SelectedStatus, ValidatesOnNotifyDataErrors=True}" />
+                        </Border>
                     </StackPanel>
                 </Grid>
 
-                <Grid Grid.Row="4" Margin="0,18,0,0">
+                        <Grid Grid.Row="4" Margin="0,18,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="16" />
@@ -123,57 +242,85 @@
                     <StackPanel Grid.Column="0">
                         <TextBlock Margin="0,0,0,8"
                                    Text="Заряд (%)"
-                                   Foreground="#5D6472" />
-                        <TextBox Padding="10,8"
-                                 Text="{Binding BatteryPercentText, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                                   Foreground="{StaticResource UiTextSecondary}" />
+                        <Border Background="{StaticResource UiInputBg}"
+                                BorderBrush="{StaticResource UiBorder}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=txtBattery, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource UiError}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBox x:Name="txtBattery"
+                                     Text="{Binding BatteryPercentText, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                        </Border>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
                         <TextBlock Margin="0,0,0,8"
                                    Text="Год выпуска"
-                                   Foreground="#5D6472" />
-                        <DatePicker SelectedDate="{Binding YearOfRelease, ValidatesOnNotifyDataErrors=True}"
-                                    IsEnabled="{Binding IsYearOfReleaseEditable}"
-                                    SelectedDateFormat="Short"
-                                    Padding="8,4" />
+                                   Foreground="{StaticResource UiTextSecondary}" />
+                        <Border Background="{StaticResource UiInputBg}"
+                                BorderBrush="{StaticResource UiBorder}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ElementName=dpYear, Path=(Validation.HasError)}" Value="True">
+                                            <Setter Property="BorderBrush" Value="{StaticResource UiError}" />
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <DatePicker x:Name="dpYear"
+                                        SelectedDate="{Binding YearOfRelease, ValidatesOnNotifyDataErrors=True}"
+                                        IsEnabled="{Binding IsYearOfReleaseEditable}"
+                                        SelectedDateFormat="Short" />
+                        </Border>
                     </StackPanel>
                 </Grid>
 
-                <TextBlock Grid.Row="5"
+                        <TextBlock Grid.Row="5"
                            Margin="0,18,0,8"
                            Text="Местоположение"
-                           Foreground="#5D6472" />
-                <StackPanel Grid.Row="6">
-                    <TextBox Padding="10,8"
-                             Text="{Binding CurrentLocation, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                           Foreground="{StaticResource UiTextSecondary}" />
+                        <StackPanel Grid.Row="6">
+                    <Border Background="{StaticResource UiInputBg}"
+                            BorderBrush="{StaticResource UiBorder}"
+                            BorderThickness="1"
+                            CornerRadius="12">
+                        <Border.Style>
+                            <Style TargetType="{x:Type Border}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ElementName=txtLocation, Path=(Validation.HasError)}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{StaticResource UiError}" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBox x:Name="txtLocation"
+                                 Text="{Binding CurrentLocation, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
+                    </Border>
                     <TextBlock Margin="2,6,0,0"
                                Text="{Binding LocationDigitsOnlyHintText}"
-                               Foreground="#7A1E2B"
+                               Foreground="{StaticResource UiHint}"
                                FontSize="12.5"
                                FontWeight="SemiBold"
                                TextWrapping="Wrap"
                                Visibility="{Binding LocationDigitsOnlyHintVisibility}" />
-                </StackPanel>
-
-                <StackPanel Grid.Row="8"
-                            Margin="0,22,0,0"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right">
-                    <Button Width="100"
-                            Margin="0,0,10,0"
-                            Padding="12,8"
-                            Click="CancelButton_Click"
-                            Content="Отмена" />
-                    <Button Width="140"
-                            Padding="14,8"
-                            Background="#0F1020"
-                            Foreground="White"
-                            BorderThickness="0"
-                            IsEnabled="{Binding CanSave}"
-                            Click="SaveButton_Click"
-                            Content="Сохранить" />
-                </StackPanel>
-            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </DockPanel>
         </md:Card>
     </Grid>
 </Window>
