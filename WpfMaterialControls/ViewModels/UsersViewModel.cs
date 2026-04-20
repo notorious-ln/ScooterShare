@@ -304,7 +304,51 @@ ORDER BY c.client_id DESC");
 
             try
             {
-                DatabaseHelper.ExecuteNonQuery("DELETE FROM Clients WHERE client_id=@id", new[] { new SqlParameter("@id", id) });
+                int complaintsCount = 0;
+                try
+                {
+                    var cnt = DatabaseHelper.ExecuteScalar(
+                        "SELECT COUNT(1) FROM IncidentsAndComplaints WHERE client_id=@id",
+                        new[] { new SqlParameter("@id", id) });
+                    complaintsCount = cnt == null || cnt == DBNull.Value ? 0 : Convert.ToInt32(cnt, CultureInfo.InvariantCulture);
+                }
+                catch
+                {
+                    // ignore count errors; we'll fall back to direct delete and show DB error if any
+                }
+
+                if (complaintsCount > 0)
+                {
+                    var res = MessageBox.Show(
+                        $"У пользователя #{id} есть связанные записи (жалобы/инциденты): {complaintsCount}.\n\n" +
+                        "Удалить пользователя вместе с этими записями?",
+                        "Есть связанные записи",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (res != MessageBoxResult.Yes)
+                    {
+                        return;
+                    }
+
+                    DatabaseHelper.ExecuteNonQuery(@"
+BEGIN TRY
+    BEGIN TRAN;
+    DELETE FROM IncidentsAndComplaints WHERE client_id=@id;
+    DELETE FROM Clients WHERE client_id=@id;
+    COMMIT TRAN;
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0 ROLLBACK TRAN;
+    THROW;
+END CATCH",
+                        new[] { new SqlParameter("@id", id) });
+                }
+                else
+                {
+                    DatabaseHelper.ExecuteNonQuery("DELETE FROM Clients WHERE client_id=@id", new[] { new SqlParameter("@id", id) });
+                }
+
                 try { DatabaseHelper.LogActivity($"Удалён пользователь #{id}"); } catch { }
                 Load();
             }
