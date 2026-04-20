@@ -12,6 +12,7 @@ using System.Windows.Forms.Integration; // for ElementHost
 using WpfMaterialControls.ViewModels; // WPF Material view
 using WpfMaterialControls; // WPF windows
 using System.Windows.Interop;
+using System.Globalization;
 
 
 
@@ -1068,30 +1069,17 @@ ORDER BY month_start;",
 
         private static string ShowInputBox(string prompt, string title, string defaultValue = "")
         {
-            using (Form frm = new Form())
-            {
-                frm.Width = 420;
-                frm.Height = 160;
-                frm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                frm.StartPosition = FormStartPosition.CenterParent;
-                frm.MinimizeBox = false;
-                frm.MaximizeBox = false;
-                frm.Text = title;
-
-                Label lbl = new Label() { Left = 12, Top = 9, Text = prompt, AutoSize = true };
-                Guna2TextBox txt = new Guna2TextBox() { Left = 12, Top = 32, Width = 380, Text = defaultValue, BorderRadius = 6 };
-                Guna2Button ok = new Guna2Button() { Text = "OK", Left = 220, Width = 80, Top = 66, BorderRadius = 6, DialogResult = DialogResult.OK };
-                Guna2Button cancel = new Guna2Button() { Text = "Отмена", Left = 312, Width = 80, Top = 66, BorderRadius = 6, DialogResult = DialogResult.Cancel };
-
-                frm.Controls.Add(lbl);
-                frm.Controls.Add(txt);
-                frm.Controls.Add(ok);
-                frm.Controls.Add(cancel);
-                frm.AcceptButton = ok;
-                frm.CancelButton = cancel;
-
-                return frm.ShowDialog() == DialogResult.OK ? txt.Text : null;
-            }
+            // Use shared friendly input dialog with inline hints/validation.
+            // We keep this wrapper to avoid touching older code paths.
+            return UserInputDialog.Prompt(
+                null,
+                title,
+                prompt,
+                defaultValue,
+                "Введите значение и нажмите OK. Если не уверены — нажмите Отмена.",
+                _ => null,
+                lettersOnly: false,
+                trimResult: true);
         }
     }
 }

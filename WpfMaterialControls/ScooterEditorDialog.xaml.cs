@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using WpfMaterialControls.ViewModels;
 
@@ -46,7 +48,7 @@ namespace WpfMaterialControls
         }
     }
 
-    internal sealed class ScooterEditorDialogViewModel : ObservableObject
+    internal sealed class ScooterEditorDialogViewModel : ObservableObject, INotifyDataErrorInfo
     {
         private string model;
         private int selectedConditionId;
@@ -55,6 +57,8 @@ namespace WpfMaterialControls
         private string currentLocation;
         private DateTime? yearOfRelease;
         private string validationMessage;
+        private readonly Dictionary<string, List<string>> errorsByPropertyName =
+            new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
         public ScooterEditorDialogViewModel(
             string dialogTitle,
@@ -80,6 +84,8 @@ namespace WpfMaterialControls
             CurrentLocation = initialData?.CurrentLocation ?? string.Empty;
             YearOfRelease = initialData?.YearOfRelease ?? DateTime.Today;
             ScooterId = initialData?.ScooterId ?? 0;
+
+            ValidateAll();
         }
 
         public int ScooterId { get; }
@@ -95,37 +101,73 @@ namespace WpfMaterialControls
         public string Model
         {
             get => model;
-            set => SetProperty(ref model, value);
+            set
+            {
+                if (SetProperty(ref model, value))
+                {
+                    ValidateModel();
+                }
+            }
         }
 
         public int SelectedConditionId
         {
             get => selectedConditionId;
-            set => SetProperty(ref selectedConditionId, value);
+            set
+            {
+                if (SetProperty(ref selectedConditionId, value))
+                {
+                    ValidateSelectedConditionId();
+                }
+            }
         }
 
         public string SelectedStatus
         {
             get => selectedStatus;
-            set => SetProperty(ref selectedStatus, value);
+            set
+            {
+                if (SetProperty(ref selectedStatus, value))
+                {
+                    ValidateSelectedStatus();
+                }
+            }
         }
 
         public string BatteryPercentText
         {
             get => batteryPercentText;
-            set => SetProperty(ref batteryPercentText, value);
+            set
+            {
+                if (SetProperty(ref batteryPercentText, value))
+                {
+                    ValidateBatteryPercentText();
+                }
+            }
         }
 
         public string CurrentLocation
         {
             get => currentLocation;
-            set => SetProperty(ref currentLocation, value);
+            set
+            {
+                if (SetProperty(ref currentLocation, value))
+                {
+                    ValidateCurrentLocation();
+                }
+            }
         }
 
         public DateTime? YearOfRelease
         {
             get => yearOfRelease;
-            set => SetProperty(ref yearOfRelease, value);
+            set
+            {
+                if (SetProperty(ref yearOfRelease, value))
+                {
+                    ValidateYearOfRelease();
+                }
+            }
         }
 
         public string ValidationMessage
@@ -143,52 +185,32 @@ namespace WpfMaterialControls
         public Visibility ValidationMessageVisibility =>
             string.IsNullOrWhiteSpace(ValidationMessage) ? Visibility.Collapsed : Visibility.Visible;
 
+        public bool CanSave => !HasErrors;
+
+        public bool HasErrors => errorsByPropertyName.Count > 0;
+
+        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+
+        public System.Collections.IEnumerable GetErrors(string propertyName)
+        {
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                return errorsByPropertyName.SelectMany(kvp => kvp.Value).ToList();
+            }
+
+            List<string> errors;
+            if (errorsByPropertyName.TryGetValue(propertyName, out errors))
+            {
+                return errors;
+            }
+
+            return new string[0];
+        }
+
         public bool Validate()
         {
-            if (string.IsNullOrWhiteSpace(Model))
-            {
-                ValidationMessage = "Укажи модель самоката.";
-                return false;
-            }
-
-            if (SelectedConditionId <= 0)
-            {
-                ValidationMessage = "Выбери техническое состояние самоката.";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(SelectedStatus))
-            {
-                ValidationMessage = "Выбери оперативный статус.";
-                return false;
-            }
-
-            if (!int.TryParse(BatteryPercentText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int batteryPercent))
-            {
-                ValidationMessage = "Заряд должен быть целым числом от 0 до 100.";
-                return false;
-            }
-
-            if (batteryPercent < 0 || batteryPercent > 100)
-            {
-                ValidationMessage = "Заряд должен быть в диапазоне от 0 до 100.";
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(CurrentLocation))
-            {
-                ValidationMessage = "Укажи текущее местоположение самоката.";
-                return false;
-            }
-
-            if (IsYearOfReleaseEditable && !YearOfRelease.HasValue)
-            {
-                ValidationMessage = "Укажи год выпуска.";
-                return false;
-            }
-
-            ValidationMessage = string.Empty;
-            return true;
+            ValidateAll();
+            return !HasErrors;
         }
 
         public ScooterDialogResult BuildResult()
@@ -207,6 +229,149 @@ namespace WpfMaterialControls
                 CurrentLocation = (CurrentLocation ?? string.Empty).Trim(),
                 YearOfRelease = YearOfRelease ?? DateTime.Today
             };
+        }
+
+        private void ValidateAll()
+        {
+            ValidateModel();
+            ValidateSelectedConditionId();
+            ValidateSelectedStatus();
+            ValidateBatteryPercentText();
+            ValidateCurrentLocation();
+            ValidateYearOfRelease();
+            UpdateValidationMessageFromErrors();
+            OnPropertyChanged(nameof(CanSave));
+        }
+
+        private void ValidateModel()
+        {
+            ClearErrors(nameof(Model));
+            string v = (Model ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v))
+            {
+                AddError(nameof(Model), "Укажи модель самоката. Можно буквы и цифры (например: Xiaomi M365).");
+                UpdateValidationMessageFromErrors();
+                return;
+            }
+
+            // Allow letters + digits, but disallow "digits only"
+            if (!Regex.IsMatch(v, @"\p{L}"))
+            {
+                AddError(nameof(Model), "Модель не может состоять только из цифр. Добавь хотя бы одну букву (например: M365).");
+                UpdateValidationMessageFromErrors();
+                return;
+            }
+            UpdateValidationMessageFromErrors();
+        }
+
+        private void ValidateSelectedConditionId()
+        {
+            ClearErrors(nameof(SelectedConditionId));
+            if (SelectedConditionId <= 0)
+            {
+                AddError(nameof(SelectedConditionId), "Выбери техническое состояние самоката.");
+            }
+            UpdateValidationMessageFromErrors();
+        }
+
+        private void ValidateSelectedStatus()
+        {
+            ClearErrors(nameof(SelectedStatus));
+            if (string.IsNullOrWhiteSpace(SelectedStatus))
+            {
+                AddError(nameof(SelectedStatus), "Выбери оперативный статус.");
+            }
+            UpdateValidationMessageFromErrors();
+        }
+
+        private void ValidateBatteryPercentText()
+        {
+            ClearErrors(nameof(BatteryPercentText));
+            if (string.IsNullOrWhiteSpace(BatteryPercentText))
+            {
+                AddError(nameof(BatteryPercentText), "Укажи заряд (0–100).");
+                UpdateValidationMessageFromErrors();
+                return;
+            }
+
+            if (!int.TryParse(BatteryPercentText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int batteryPercent))
+            {
+                AddError(nameof(BatteryPercentText), "Заряд должен быть целым числом от 0 до 100.");
+                UpdateValidationMessageFromErrors();
+                return;
+            }
+
+            if (batteryPercent < 0 || batteryPercent > 100)
+            {
+                AddError(nameof(BatteryPercentText), "Заряд должен быть в диапазоне от 0 до 100.");
+            }
+
+            UpdateValidationMessageFromErrors();
+        }
+
+        private void ValidateCurrentLocation()
+        {
+            ClearErrors(nameof(CurrentLocation));
+            if (string.IsNullOrWhiteSpace(CurrentLocation))
+            {
+                AddError(nameof(CurrentLocation), "Укажи текущее местоположение самоката.");
+            }
+            UpdateValidationMessageFromErrors();
+        }
+
+        private void ValidateYearOfRelease()
+        {
+            ClearErrors(nameof(YearOfRelease));
+            if (IsYearOfReleaseEditable && !YearOfRelease.HasValue)
+            {
+                AddError(nameof(YearOfRelease), "Укажи год выпуска.");
+                UpdateValidationMessageFromErrors();
+                return;
+            }
+
+            if (YearOfRelease.HasValue && YearOfRelease.Value.Date > DateTime.Today)
+            {
+                AddError(nameof(YearOfRelease), "Год выпуска не может быть в будущем.");
+            }
+
+            UpdateValidationMessageFromErrors();
+        }
+
+        private void UpdateValidationMessageFromErrors()
+        {
+            string firstError = errorsByPropertyName.Values.SelectMany(x => x).FirstOrDefault() ?? string.Empty;
+            ValidationMessage = firstError;
+            OnPropertyChanged(nameof(CanSave));
+        }
+
+        private void AddError(string propertyName, string error)
+        {
+            if (!errorsByPropertyName.TryGetValue(propertyName, out var errors))
+            {
+                errors = new List<string>();
+                errorsByPropertyName[propertyName] = errors;
+            }
+
+            if (!errors.Contains(error, StringComparer.Ordinal))
+            {
+                errors.Add(error);
+                RaiseErrorsChanged(propertyName);
+            }
+        }
+
+        private void ClearErrors(string propertyName)
+        {
+            if (errorsByPropertyName.Remove(propertyName))
+            {
+                RaiseErrorsChanged(propertyName);
+            }
+        }
+
+        private void RaiseErrorsChanged(string propertyName)
+        {
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+            OnPropertyChanged(nameof(HasErrors));
+            OnPropertyChanged(nameof(CanSave));
         }
     }
 

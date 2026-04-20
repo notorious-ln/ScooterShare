@@ -10,6 +10,43 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#F6F7FA">
+    <Window.Resources>
+        <Style TargetType="{x:Type Control}">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="ToolTip"
+                            Value="{Binding RelativeSource={RelativeSource Self}, Path=(Validation.Errors)[0].ErrorContent}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type TextBox}">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="#D15B75" />
+                    <Setter Property="BorderThickness" Value="2" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type ComboBox}">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="#D15B75" />
+                    <Setter Property="BorderThickness" Value="2" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="{x:Type DatePicker}">
+            <Style.Triggers>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="BorderBrush" Value="#D15B75" />
+                    <Setter Property="BorderThickness" Value="2" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid Margin="20">
         <md:Card Padding="24">
             <Grid>
@@ -38,7 +75,7 @@
                 <TextBox x:Name="txtModel"
                          Grid.Row="2"
                          Padding="10,8"
-                         Text="{Binding Model, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding Model, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
 
                 <Grid Grid.Row="3" Margin="0,18,0,0">
                     <Grid.ColumnDefinitions>
@@ -54,7 +91,7 @@
                         <ComboBox ItemsSource="{Binding Conditions}"
                                   DisplayMemberPath="ConditionName"
                                   SelectedValuePath="ConditionId"
-                                  SelectedValue="{Binding SelectedConditionId}"
+                                  SelectedValue="{Binding SelectedConditionId, ValidatesOnNotifyDataErrors=True}"
                                   Padding="8,6" />
                     </StackPanel>
 
@@ -63,7 +100,7 @@
                                    Text="Оперативный статус"
                                    Foreground="#5D6472" />
                         <ComboBox ItemsSource="{Binding AvailableStatuses}"
-                                  SelectedItem="{Binding SelectedStatus}"
+                                  SelectedItem="{Binding SelectedStatus, ValidatesOnNotifyDataErrors=True}"
                                   Padding="8,6" />
                     </StackPanel>
                 </Grid>
@@ -80,15 +117,16 @@
                                    Text="Заряд (%)"
                                    Foreground="#5D6472" />
                         <TextBox Padding="10,8"
-                                 Text="{Binding BatteryPercentText, UpdateSourceTrigger=PropertyChanged}" />
+                                 Text="{Binding BatteryPercentText, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
                         <TextBlock Margin="0,0,0,8"
                                    Text="Год выпуска"
                                    Foreground="#5D6472" />
-                        <DatePicker SelectedDate="{Binding YearOfRelease}"
+                        <DatePicker SelectedDate="{Binding YearOfRelease, ValidatesOnNotifyDataErrors=True}"
                                     IsEnabled="{Binding IsYearOfReleaseEditable}"
+                                    SelectedDateFormat="Short"
                                     Padding="8,4" />
                     </StackPanel>
                 </Grid>
@@ -99,7 +137,7 @@
                            Foreground="#5D6472" />
                 <TextBox Grid.Row="6"
                          Padding="10,8"
-                         Text="{Binding CurrentLocation, UpdateSourceTrigger=PropertyChanged}" />
+                         Text="{Binding CurrentLocation, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
 
                 <Border Grid.Row="7"
                         Margin="0,18,0,0"
@@ -126,6 +164,7 @@
                             Background="#0F1020"
                             Foreground="White"
                             BorderThickness="0"
+                            IsEnabled="{Binding CanSave}"
                             Click="SaveButton_Click"
                             Content="Сохранить" />
                 </StackPanel>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -10,6 +11,7 @@ namespace ScooterShare
     {
         private readonly Color placeholderColor = Color.Gray;
         private readonly Color textColor = Color.FromArgb(34, 34, 34);
+        private readonly ErrorProvider errorProvider = new ErrorProvider();
 
         // P/Invoke для перетаскивания окна
         [DllImport("user32.dll")]
@@ -24,6 +26,12 @@ namespace ScooterShare
         public LoginForm()
         {
             InitializeComponent();
+
+            errorProvider.BlinkStyle = ErrorBlinkStyle.NeverBlink;
+            errorProvider.ContainerControl = this;
+
+            txtEmail.TextChanged += (_, __) => ValidateInputsAndUpdateUi();
+            txtPassword.TextChanged += (_, __) => ValidateInputsAndUpdateUi();
 
             // Регион с закруглениями и позиционирование элементов
             this.Load += (s, e) =>
@@ -56,6 +64,8 @@ namespace ScooterShare
                 btnMinimize.Left = cardPanel.Width - 24 - 56;
                 btnClose.Left = cardPanel.Width - 24 - 24;
             };
+
+            ValidateInputsAndUpdateUi();
         }
 
         private void CenterCardHorizontally()
@@ -182,6 +192,11 @@ namespace ScooterShare
 
         private void BtnLogin_Click(object sender, EventArgs e)
         {
+            if (!ValidateInputsAndUpdateUi())
+            {
+                return;
+            }
+
             string email = (txtEmail.ForeColor == placeholderColor) ? "" : txtEmail.Text;
             string password = (txtPassword.ForeColor == placeholderColor) ? "" : txtPassword.Text;
 
@@ -220,6 +235,11 @@ namespace ScooterShare
         private void LblAdminLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             // Проверяем поля ввода (учитываем плейсхолдеры)
+            if (!ValidateInputsAndUpdateUi())
+            {
+                return;
+            }
+
             string email = (txtEmail.ForeColor == placeholderColor) ? "" : txtEmail.Text;
             string password = (txtPassword.ForeColor == placeholderColor) ? "" : txtPassword.Text;
 
@@ -258,6 +278,49 @@ namespace ScooterShare
             {
                 ReleaseCapture();
                 SendMessage(this.Handle, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero);
+            }
+        }
+
+        private bool ValidateInputsAndUpdateUi()
+        {
+            string email = (txtEmail.ForeColor == placeholderColor) ? string.Empty : (txtEmail.Text ?? string.Empty);
+            string password = (txtPassword.ForeColor == placeholderColor) ? string.Empty : (txtPassword.Text ?? string.Empty);
+
+            bool ok = true;
+            errorProvider.SetError(txtEmail, string.Empty);
+            errorProvider.SetError(txtPassword, string.Empty);
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ok = false;
+                errorProvider.SetError(txtEmail, "Укажи email.");
+            }
+            else if (!IsValidEmail(email))
+            {
+                ok = false;
+                errorProvider.SetError(txtEmail, "Неверный формат email.");
+            }
+
+            if (string.IsNullOrWhiteSpace(password) || string.Equals(password, "Пароль", StringComparison.Ordinal))
+            {
+                ok = false;
+                errorProvider.SetError(txtPassword, "Укажи пароль.");
+            }
+
+            btnLogin.Enabled = ok;
+            return ok;
+        }
+
+        private static bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new MailAddress(email);
+                return string.Equals(addr.Address, email, StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
             }
         }
     }

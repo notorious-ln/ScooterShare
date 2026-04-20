@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Globalization;
 
 namespace ScooterShare
 {
@@ -80,13 +81,56 @@ namespace ScooterShare
         {
             try
             {
-                string model = ShowInputBox("Модель:", "Добавить самокат", "Model X");
-                if (string.IsNullOrWhiteSpace(model)) return;
-                string condStr = ShowInputBox("condition_id (число):", "Добавить самокат", "1");
-                if (!int.TryParse(condStr, out int condId)) condId = 1;
-                string yearStr = ShowInputBox("Год выпуска (YYYY-MM-DD):", "Добавить самокат", DateTime.Today.ToString("yyyy-MM-dd"));
-                DateTime yearValue;
-                if (string.IsNullOrWhiteSpace(yearStr) || !DateTime.TryParse(yearStr, out yearValue)) yearValue = DateTime.Today;
+                string model = UserInputDialog.Prompt(
+                    this,
+                    "Добавить самокат",
+                    "Модель",
+                    "Model X",
+                    "Например: Ninebot Max G30, Xiaomi M365. Поле обязательно.",
+                    v =>
+                    {
+                        string s = (v ?? string.Empty).Trim();
+                        if (string.IsNullOrWhiteSpace(s)) return "Введите модель. Пример: Xiaomi M365.";
+                        if (!System.Text.RegularExpressions.Regex.IsMatch(s, @"\p{L}"))
+                            return "Модель не может состоять только из цифр. Добавь хотя бы одну букву (например: M365).";
+                        return null;
+                    },
+                    lettersOnly: false);
+                if (model == null) return;
+
+                string condStr = UserInputDialog.Prompt(
+                    this,
+                    "Добавить самокат",
+                    "Техническое состояние (ID)",
+                    "1",
+                    "Введите число. Обычно 1 = исправен (если так заведено в таблице Conditions).",
+                    v =>
+                    {
+                        int id;
+                        if (!int.TryParse((v ?? string.Empty).Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out id) || id <= 0)
+                            return "Введите целое число больше 0. Например: 1.";
+                        return null;
+                    });
+                if (condStr == null) return;
+                int condId = int.Parse(condStr, CultureInfo.InvariantCulture);
+
+                string yearStr = UserInputDialog.Prompt(
+                    this,
+                    "Добавить самокат",
+                    "Год выпуска",
+                    DateTime.Today.ToString("yyyy-MM-dd"),
+                    "Формат: ГГГГ-ММ-ДД. Например: 2024-05-20.",
+                    v =>
+                    {
+                        DateTime dt;
+                        if (!DateTime.TryParse((v ?? string.Empty).Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out dt))
+                            return "Не похоже на дату. Пример: 2024-05-20.";
+                        if (dt.Date > DateTime.Today) return "Дата не может быть в будущем.";
+                        if (dt.Year < 2000) return "Слишком старый год. Введите реальный год выпуска.";
+                        return null;
+                    });
+                if (yearStr == null) return;
+                DateTime yearValue = DateTime.Parse(yearStr, CultureInfo.InvariantCulture);
 
                 string insert = "INSERT INTO Scooters (model, condition_id, yearOfRelease) VALUES (@model, @cond, @year); SELECT SCOPE_IDENTITY();";
                 SqlParameter[] ps = new SqlParameter[] {
@@ -206,13 +250,56 @@ namespace ScooterShare
                 var curStatus = dgv.Rows[e.RowIndex].Cells[2].Value?.ToString();
                 var curYear = dgv.Rows[e.RowIndex].Cells[3].Value?.ToString();
 
-                string newModel = ShowInputBox("Новая модель:", "Редактировать", curModel);
-                if (string.IsNullOrWhiteSpace(newModel)) return;
-                string condStr = ShowInputBox("condition_id (число):", "Редактировать", "1");
-                if (!int.TryParse(condStr, out int condId)) condId = 1;
-                string yearStr = ShowInputBox("Год выпуска (YYYY-MM-DD):", "Редактировать", curYear ?? DateTime.Today.ToString("yyyy-MM-dd"));
-                DateTime yearValue;
-                if (string.IsNullOrWhiteSpace(yearStr) || !DateTime.TryParse(yearStr, out yearValue)) yearValue = DateTime.Today;
+                string newModel = UserInputDialog.Prompt(
+                    this,
+                    "Редактировать самокат",
+                    "Модель",
+                    curModel ?? string.Empty,
+                    "Например: Ninebot Max G30.",
+                    v =>
+                    {
+                        string s = (v ?? string.Empty).Trim();
+                        if (string.IsNullOrWhiteSpace(s)) return "Введите модель. Пример: Xiaomi M365.";
+                        if (!System.Text.RegularExpressions.Regex.IsMatch(s, @"\p{L}"))
+                            return "Модель не может состоять только из цифр. Добавь хотя бы одну букву (например: M365).";
+                        return null;
+                    },
+                    lettersOnly: false);
+                if (newModel == null) return;
+
+                string condStr = UserInputDialog.Prompt(
+                    this,
+                    "Редактировать самокат",
+                    "Техническое состояние (ID)",
+                    "1",
+                    "Введите число больше 0. Например: 1.",
+                    v =>
+                    {
+                        int idInt;
+                        if (!int.TryParse((v ?? string.Empty).Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out idInt) || idInt <= 0)
+                            return "Введите целое число больше 0. Например: 1.";
+                        return null;
+                    });
+                if (condStr == null) return;
+                int condId = int.Parse(condStr, CultureInfo.InvariantCulture);
+
+                string yearStr = UserInputDialog.Prompt(
+                    this,
+                    "Редактировать самокат",
+                    "Год выпуска",
+                    string.IsNullOrWhiteSpace(curYear) ? DateTime.Today.ToString("yyyy-MM-dd") : curYear,
+                    "Формат: ГГГГ-ММ-ДД. Например: 2024-05-20.",
+                    v =>
+                    {
+                        DateTime dt;
+                        if (!DateTime.TryParse((v ?? string.Empty).Trim(), CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out dt))
+                            return "Не похоже на дату. Пример: 2024-05-20.";
+                        if (dt.Date > DateTime.Today) return "Дата не может быть в будущем.";
+                        if (dt.Year < 2000) return "Слишком старый год. Введите реальный год выпуска.";
+                        return null;
+                    });
+                if (yearStr == null) return;
+                DateTime yearValue = DateTime.Parse(yearStr, CultureInfo.InvariantCulture);
 
                 DatabaseHelper.ExecuteNonQuery("UPDATE Scooters SET model=@m, condition_id=@c, yearOfRelease=@y WHERE scooter_id=@id",
                     new SqlParameter[] { new SqlParameter("@m", newModel), new SqlParameter("@c", condId), new SqlParameter("@y", yearValue), new SqlParameter("@id", id) });
@@ -266,30 +353,16 @@ namespace ScooterShare
 
         private static string ShowInputBox(string prompt, string title, string defaultValue = "")
         {
-            using (Form frm = new Form())
-            {
-                frm.Width = 420;
-                frm.Height = 160;
-                frm.FormBorderStyle = FormBorderStyle.FixedDialog;
-                frm.StartPosition = FormStartPosition.CenterParent;
-                frm.MinimizeBox = false;
-                frm.MaximizeBox = false;
-                frm.Text = title;
-
-                Label lbl = new Label() { Left = 12, Top = 9, Text = prompt, AutoSize = true };
-                TextBox txt = new TextBox() { Left = 12, Top = 32, Width = 380, Text = defaultValue };
-                Button ok = new Button() { Text = "OK", Left = 220, Width = 80, Top = 66, DialogResult = DialogResult.OK };
-                Button cancel = new Button() { Text = "Отмена", Left = 312, Width = 80, Top = 66, DialogResult = DialogResult.Cancel };
-
-                frm.Controls.Add(lbl);
-                frm.Controls.Add(txt);
-                frm.Controls.Add(ok);
-                frm.Controls.Add(cancel);
-                frm.AcceptButton = ok;
-                frm.CancelButton = cancel;
-
-                return frm.ShowDialog() == DialogResult.OK ? txt.Text : null;
-            }
+            // legacy wrapper (kept for compatibility with old calls, but now with helpful UX)
+            return UserInputDialog.Prompt(
+                null,
+                title,
+                prompt,
+                defaultValue,
+                "Введите значение и нажмите OK. Если не уверены — нажмите Отмена.",
+                _ => null,
+                lettersOnly: false,
+                trimResult: true);
         }
         private void LoadStats()
         {

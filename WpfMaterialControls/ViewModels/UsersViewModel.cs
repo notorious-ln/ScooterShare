@@ -6,6 +6,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.Net.Mail;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -178,17 +180,63 @@ ORDER BY c.client_id DESC");
         {
             try
             {
-                string firstName = Ask("Имя", "Добавление пользователя", string.Empty);
-                if (string.IsNullOrWhiteSpace(firstName)) return;
-                string lastName = Ask("Фамилия", "Добавление пользователя", string.Empty);
-                if (string.IsNullOrWhiteSpace(lastName)) return;
-                string middleName = Ask("Отчество", "Добавление пользователя", string.Empty);
+                Window owner = Application.Current?.MainWindow;
+
+                string firstName = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Добавление пользователя",
+                    "Имя",
+                    "Например: Иван. Поле обязательно.",
+                    string.Empty,
+                    ValidatePersonNameRequired,
+                    lettersOnly: true);
+                if (firstName == null) return;
+
+                string lastName = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Добавление пользователя",
+                    "Фамилия",
+                    "Например: Петров. Поле обязательно.",
+                    string.Empty,
+                    ValidatePersonNameRequired,
+                    lettersOnly: true);
+                if (lastName == null) return;
+
+                string middleName = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Добавление пользователя",
+                    "Отчество (можно оставить пустым)",
+                    "Например: Сергеевич. Если нет — оставь пустым.",
+                    string.Empty,
+                    ValidateMiddleNameOptional,
+                    lettersOnly: true);
                 if (middleName == null) return;
-                string email = Ask("Email", "Добавление пользователя", string.Empty);
+
+                string email = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Добавление пользователя",
+                    "Email",
+                    "Пример: ivan.petrov@gmail.com",
+                    string.Empty,
+                    ValidateEmailRequired);
                 if (email == null) return;
-                string phone = Ask("Телефон", "Добавление пользователя", string.Empty);
+
+                string phone = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Добавление пользователя",
+                    "Телефон",
+                    "Пример: +7 999 123-45-67. Можно вводить с пробелами/дефисами.",
+                    string.Empty,
+                    ValidatePhoneRequired);
                 if (phone == null) return;
-                string passport = Ask("Серия/номер паспорта", "Добавление пользователя", "0000 000000");
+
+                string passport = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Добавление пользователя",
+                    "Серия и номер паспорта",
+                    "Формат: 0000 000000 (4 цифры пробел 6 цифр).",
+                    "0000 000000",
+                    ValidatePassportRequired);
                 if (passport == null) return;
 
                 string insertQuery;
@@ -244,15 +292,54 @@ ORDER BY c.client_id DESC");
                     new[] { new SqlParameter("@id", id) });
                 if (row.Rows.Count == 0) return;
 
-                string firstName = Ask("Имя", "Редактирование пользователя", ToString(row.Rows[0]["firstName"]));
-                if (string.IsNullOrWhiteSpace(firstName)) return;
-                string lastName = Ask("Фамилия", "Редактирование пользователя", ToString(row.Rows[0]["lastName"]));
-                if (string.IsNullOrWhiteSpace(lastName)) return;
-                string middleName = Ask("Отчество", "Редактирование пользователя", ToString(row.Rows[0]["middleName"]));
+                Window owner = Application.Current?.MainWindow;
+
+                string firstName = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Редактирование пользователя",
+                    "Имя",
+                    "Поле обязательно. Например: Иван.",
+                    ToString(row.Rows[0]["firstName"]),
+                    ValidatePersonNameRequired,
+                    lettersOnly: true);
+                if (firstName == null) return;
+
+                string lastName = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Редактирование пользователя",
+                    "Фамилия",
+                    "Поле обязательно. Например: Петров.",
+                    ToString(row.Rows[0]["lastName"]),
+                    ValidatePersonNameRequired,
+                    lettersOnly: true);
+                if (lastName == null) return;
+
+                string middleName = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Редактирование пользователя",
+                    "Отчество (можно оставить пустым)",
+                    "Если нет — оставь пустым.",
+                    ToString(row.Rows[0]["middleName"]),
+                    ValidateMiddleNameOptional,
+                    lettersOnly: true);
                 if (middleName == null) return;
-                string email = Ask("Email", "Редактирование пользователя", ToString(row.Rows[0]["client_post"]));
+
+                string email = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Редактирование пользователя",
+                    "Email",
+                    "Пример: ivan.petrov@gmail.com",
+                    ToString(row.Rows[0]["client_post"]),
+                    ValidateEmailRequired);
                 if (email == null) return;
-                string phone = Ask("Телефон", "Редактирование пользователя", ToString(row.Rows[0]["telephone_number"]));
+
+                string phone = WpfMaterialControls.PromptDialog.ShowDialog(
+                    owner,
+                    "Редактирование пользователя",
+                    "Телефон",
+                    "Пример: +7 999 123-45-67",
+                    ToString(row.Rows[0]["telephone_number"]),
+                    ValidatePhoneRequired);
                 if (phone == null) return;
 
                 string updateQuery = !string.IsNullOrEmpty(middleNameColumn)
@@ -358,44 +445,66 @@ END CATCH",
             }
         }
 
-        private static string Ask(string text, string caption, string defaultValue)
+        private static string ValidatePersonNameRequired(string value)
         {
-            var dialog = new Window
+            string v = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v)) return "Поле не может быть пустым. Введите значение.";
+            if (v.Length < 2) return "Слишком коротко. Введите хотя бы 2 буквы.";
+            if (!Regex.IsMatch(v, @"^[\p{L}\-'\s]+$")) return "Используйте только буквы (и дефис, если нужно).";
+            return null;
+        }
+
+        private static string ValidateMiddleNameOptional(string value)
+        {
+            string v = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v)) return null;
+            if (v.Length < 2) return "Слишком коротко. Либо оставьте пустым, либо введите отчество полностью.";
+            if (!Regex.IsMatch(v, @"^[\p{L}\-'\s]+$")) return "Используйте только буквы (и дефис, если нужно).";
+            return null;
+        }
+
+        private static string ValidateEmailRequired(string value)
+        {
+            string v = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v)) return "Введите email. Пример: name@example.com";
+            try
             {
-                Title = caption,
-                Width = 420,
-                Height = 170,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.NoResize,
-                WindowStyle = WindowStyle.ToolWindow,
-                Topmost = true
-            };
+                var addr = new MailAddress(v);
+                if (!string.Equals(addr.Address, v, StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Неверный email. Пример: name@example.com";
+                }
+            }
+            catch
+            {
+                return "Неверный email. Пример: name@example.com";
+            }
+            return null;
+        }
 
-            var root = new Grid { Margin = new Thickness(12) };
-            root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        private static string ValidatePhoneRequired(string value)
+        {
+            string v = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v)) return "Введите телефон. Пример: +7 999 123-45-67";
 
-            var lbl = new TextBlock { Text = text, Margin = new Thickness(0, 0, 0, 8) };
-            Grid.SetRow(lbl, 0);
-            var box = new TextBox { Text = defaultValue ?? string.Empty, Margin = new Thickness(0, 0, 0, 12) };
-            Grid.SetRow(box, 1);
+            // Keep only digits to validate length.
+            string digits = Regex.Replace(v, @"\D", "");
+            if (digits.Length < 10) return "Слишком короткий номер. Пример: +7 999 123-45-67";
+            if (digits.Length > 15) return "Слишком длинный номер. Проверьте ввод.";
+            return null;
+        }
 
-            var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-            var ok = new Button { Content = "OK", Width = 72, Margin = new Thickness(0, 0, 8, 0), IsDefault = true };
-            var cancel = new Button { Content = "Отмена", Width = 72, IsCancel = true };
-            buttons.Children.Add(ok);
-            buttons.Children.Add(cancel);
-            Grid.SetRow(buttons, 2);
+        private static string ValidatePassportRequired(string value)
+        {
+            string v = (value ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(v)) return "Введите серию и номер. Пример: 1234 567890";
 
-            ok.Click += (_, __) => { dialog.DialogResult = true; dialog.Close(); };
-
-            root.Children.Add(lbl);
-            root.Children.Add(box);
-            root.Children.Add(buttons);
-            dialog.Content = root;
-
-            return dialog.ShowDialog() == true ? box.Text : null;
+            string normalized = Regex.Replace(v, @"\s+", " ");
+            if (!Regex.IsMatch(normalized, @"^\d{4}\s\d{6}$"))
+            {
+                return "Неверный формат. Нужно: 4 цифры пробел 6 цифр. Пример: 1234 567890";
+            }
+            return null;
         }
 
         private static int ToInt(object value)
