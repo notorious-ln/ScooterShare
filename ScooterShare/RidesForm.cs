@@ -51,7 +51,10 @@ namespace ScooterShare
                 lblRidesToday.Text = dtToday.Rows[0][0].ToString();
 
                 DataTable dtWeek = DatabaseHelper.ExecuteQuery(
-                    "SELECT COUNT(*) FROM Active_rentals WHERE start_time > DATEADD(day, -7, GETDATE())");
+                    @"SELECT COUNT(*)
+FROM Active_rentals
+WHERE start_time >= DATEADD(day, -6, CAST(GETDATE() AS DATE))
+  AND start_time <  DATEADD(day, 1, CAST(GETDATE() AS DATE));");
                 lblRidesWeek.Text = dtWeek.Rows[0][0].ToString();
 
                 lblRevenue.Text = "₽124500";

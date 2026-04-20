@@ -524,7 +524,7 @@ ORDER BY month_start;",
                         panel.ClientRectangle,
                         anchor,
                         labels[hoveredIndex],
-                        $"rides : {values[hoveredIndex]}",
+                        $"Поездки: {values[hoveredIndex]}",
                         Color.FromArgb(12, 10, 23),
                         hoveredPoint);
                 }
@@ -678,7 +678,7 @@ ORDER BY month_start;",
                         panel.ClientRectangle,
                         Point.Round(pts[hoveredIndex]),
                         labels[hoveredIndex],
-                        $"revenue : {(int)values[hoveredIndex]}",
+                        $"Доход: ₽{Math.Round(values[hoveredIndex], 0):N0}".Replace(",", " "),
                         Color.FromArgb(230, 115, 41),
                         hoveredPoint);
                 }

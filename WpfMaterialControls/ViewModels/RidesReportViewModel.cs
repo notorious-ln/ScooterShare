@@ -160,7 +160,10 @@ ORDER BY ar.start_time DESC;");
 
             if (SelectedPeriod == "Неделя")
             {
-                return item.StartTime >= today.AddDays(-7);
+                // "Неделя" = последние 7 дней включая сегодня; исключаем будущие даты.
+                DateTime from = today.AddDays(-6);
+                DateTime toExclusive = today.AddDays(1);
+                return item.StartTime >= from && item.StartTime < toExclusive;
             }
 
             return true;

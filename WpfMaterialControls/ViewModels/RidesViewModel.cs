@@ -104,7 +104,10 @@ namespace WpfMaterialControls.ViewModels
                 RidesToday = ridesTodayCount.ToString(CultureInfo.InvariantCulture);
 
                 object ridesWeekObj = DatabaseHelper.ExecuteScalar(
-                    "SELECT COUNT(*) FROM Active_rentals WHERE start_time >= DATEADD(day, -7, GETDATE())");
+                    @"SELECT COUNT(*)
+FROM Active_rentals
+WHERE start_time >= DATEADD(day, -6, CAST(GETDATE() AS DATE))
+  AND start_time <  DATEADD(day, 1, CAST(GETDATE() AS DATE));");
                 RidesThisWeek = ToInt(ridesWeekObj).ToString(CultureInfo.InvariantCulture);
 
                 object revenueTodayObj = DatabaseHelper.ExecuteScalar(@"
@@ -220,7 +223,10 @@ ORDER BY ar.start_time DESC;");
 
             if (SelectedPeriod == "Неделя")
             {
-                return item.StartTime >= today.AddDays(-7);
+                // "Неделя" = последние 7 дней включая сегодня; исключаем будущие даты.
+                DateTime from = today.AddDays(-6);
+                DateTime toExclusive = today.AddDays(1);
+                return item.StartTime >= from && item.StartTime < toExclusive;
             }
 
             return true;
