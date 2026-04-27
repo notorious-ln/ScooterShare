@@ -826,6 +826,12 @@ ORDER BY month_start;",
             }
         }
 
+        private void BtnMaintenance_Click(object sender, EventArgs e)
+        {
+            SetActiveSidebar(btnMaintenance);
+            ShowMaintenance();
+        }
+
         private void BtnDashboard_Click(object sender, EventArgs e)
         {
             SetActiveSidebar(btnDashboard);
@@ -1069,6 +1075,18 @@ ORDER BY month_start;",
             catch (Exception ex)
             {
                 MessageBox.Show("Не удалось загрузить Rides view: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ShowMaintenance()
+        {
+            try
+            {
+                ReplacePanelContent(new MaintenanceControl());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Не удалось загрузить вкладку ТО: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 

@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="DatabaseHelper.cs" />
     <Compile Include="AppIcon.cs" />
+    <Compile Include="MaintenanceControl.cs" />
     <Compile Include="UserInputDialog.cs" />
     <Compile Include="LoginForm.cs">
       <SubType>Form</SubType>
