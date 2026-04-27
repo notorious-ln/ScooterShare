@@ -14,7 +14,6 @@ namespace ScooterShare
         private readonly Color textColor = Color.FromArgb(34, 34, 34);
         private readonly ErrorProvider errorProvider = new ErrorProvider();
 
-        // P/Invoke для перетаскивания окна
         [DllImport("user32.dll")]
         private static extern bool ReleaseCapture();
 

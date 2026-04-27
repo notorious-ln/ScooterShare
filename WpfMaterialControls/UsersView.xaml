@@ -107,14 +107,14 @@
 
                 <Border Grid.Column="1" Margin="0,0,12,0" Style="{StaticResource UsersSummaryCardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Активные" Foreground="#9BA3AF" FontSize="13.5"/>
+                        <TextBlock Text="Без жалоб" Foreground="#9BA3AF" FontSize="13.5"/>
                         <TextBlock Text="{Binding ActiveUsers}" FontSize="33" FontWeight="SemiBold" Margin="0,10,0,0" Foreground="#2EA35F"/>
                     </StackPanel>
                 </Border>
 
                 <Border Grid.Column="2" Style="{StaticResource UsersSummaryCardStyle}">
                     <StackPanel>
-                        <TextBlock Text="Заблокированные" Foreground="#9BA3AF" FontSize="13.5"/>
+                        <TextBlock Text="С жалобами" Foreground="#9BA3AF" FontSize="13.5"/>
                         <TextBlock Text="{Binding BlockedUsers}" FontSize="33" FontWeight="SemiBold" Margin="0,10,0,0" Foreground="#CC4B62"/>
                     </StackPanel>
                 </Border>

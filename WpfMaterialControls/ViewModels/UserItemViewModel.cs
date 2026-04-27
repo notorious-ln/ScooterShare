@@ -12,7 +12,7 @@ namespace WpfMaterialControls.ViewModels
         public string JoinedText { get; set; }
         public string RidesRevenueText { get; set; }
         public bool IsBlocked { get; set; }
-        public string StatusText => IsBlocked ? "Заблокирован" : "Активен";
+        public string StatusText => IsBlocked ? "Есть жалобы" : "Без жалоб";
         public string StatusBackground => IsBlocked ? "#FDECEF" : "#EAF8EC";
         public string StatusForeground => IsBlocked ? "#CC4B62" : "#2EA35F";
     }
